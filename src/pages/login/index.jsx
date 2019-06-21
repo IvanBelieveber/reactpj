@@ -4,8 +4,41 @@ import './index.less'
 import { Form, Icon, Input, Button } from 'antd';
 
 const Item=Form.Item;
-export  default class Login extends React.Component{
+ class Login extends React.Component{
+     login=(e)=>{
+         e.preventDefault()
+         this.props.form.validateFields((error,values)=>{
+              console.log(error,values)
+             if (!error){
+                 const {username,password}=values
+               console.log(username,password)
+             }else{
+                    console.log('登陆表单校验失败',error);
+             }
+         })
+     }
+     validator=(rule,value,callback)=>{
+         console.log(rule,value)
+         const name=rule.fullField==='username'?'用户名':'密码';
+         if (!value) {
+             // 没有输入
+             callback(`必须输入${name}！`);
+         } else if (value.length < 4) {
+             callback(`${name}必须大于4位`);
+         } else if (value.length > 15) {
+             callback(`${name}必须小于15位`);
+         } else if (!/^[a-zA-Z_0-9]+$/.test(value)) {
+             callback(`${name}只能包含英文字母、数字和下划线`);
+         } else {
+             // 不传参代表校验通过，传参代表校验失败
+             callback();
+         }
+     }
+
     render(){
+        const { getFieldDecorator } = this.props.form;
+
+
         return(
             <div className='login'>
                 <header className='login-header'>
@@ -16,10 +49,38 @@ export  default class Login extends React.Component{
                     <h2>用户登录</h2>
                     <Form onSubmit={this.login} className='login-form'>
                         <Item>
-                            <Input  className='login-input' prefix={<Icon type="user" />} placeholder="用户名"/>
+                            {
+                                getFieldDecorator(
+                                    'username',
+                                    {
+                                        rules:[
+                                            {
+                                                validator:this.validator,
+                                            }
+                                        ]
+
+                                    }
+                                )(
+                                    <Input className="login-input" prefix={<Icon type="user" />} placeholder="用户名"/>
+                                )
+                            }
                         </Item>
                         <Item>
-                            <Input className='login-input' prefix={<Icon type="lock" />} placeholder="密码" type='password'/>
+                            {
+                                getFieldDecorator(
+                                    'password',
+                                    {
+                                        rules: [
+                                            {
+                                                validator:this.validator,
+                                            }
+
+                                        ]
+                                    }
+                                )(
+                                    <Input className='login-input' prefix={<Icon type="lock" />} placeholder="密码" type='password'/>
+                                )
+                            }
                         </Item>
                         <Item><Button type='primary' htmlType='submit' className='login-btn'>登录</Button></Item>
 
@@ -33,3 +94,4 @@ export  default class Login extends React.Component{
 
     }
 }
+export  default Form.create()(Login)
